@@ -1,3 +1,4 @@
+##### Licensed with Apache 2.0 markliou 20170804
 import re
 import numpy as np
 import sys
