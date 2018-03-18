@@ -1,11 +1,11 @@
 #!/usr/bin/python3
 #####
-# This script can build a CNN model according to a paramter array given by user
 # markliou 20171117
 #####
 
 import tensorflow as tf
 import numpy as np
+import tools
 
 
 def construct_2dcnn(
@@ -90,17 +90,29 @@ def fc(x, W, b):
     return tf.nn.elu(x)
 pass
 
+def trans2onehot( sparse_ind, output_dim):
+    onehoty = np.zeros([output_dim])
+    try:
+        for i in range(0,len(sparse_ind)):
+            onehoty[i] = 1
+        pass 
+    except:
+        onehoty[sparse_ind] = 1
+    pass
+    return onehoty
+pass
+
 ###########################
 
 # set the entry points for construct_2dcnn
 input_dim = [28,28]
 output_dim = 10
-batch_size = 200
+batch_size = 500
 x = tf.placeholder(tf.float32, [None, input_dim[0]*input_dim[1]])
 y = tf.placeholder(tf.float32, [None, output_dim])
 
 pred = construct_2dcnn(x, 
-                       struc_param = [7,6,256], 
+                       struc_param = [3,6,32], 
                        input_dim = input_dim, 
                        input_channel_dim = 1, 
                        output_dim = output_dim)
@@ -109,17 +121,18 @@ pred = construct_2dcnn(x,
 
 # Import MNIST data
 from tensorflow.examples.tutorials.mnist import input_data
+# mnist = input_data.read_data_sets("./", one_hot=True)
 # mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
-mnist = input_data.read_data_sets("./", one_hot=True)
-
+mnist = input_data.read_data_sets("/tmp/data/") # This will disable the one hot transform function
 
 # Parameters
-learning_rate = 0.001
-training_iters = 1000000
+learning_rate = 1E-3
+training_iters = 10000000
 display_step = 10
 
 # Define loss and optimizer
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=pred, labels=y))
+#cost = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=pred, labels=y))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
 
 # Evaluate model
@@ -132,14 +145,38 @@ init = tf.global_variables_initializer()
 # Launch the graph
 tfconfig = tf.ConfigProto()
 tfconfig.gpu_options.allow_growth = True
+model_saver = tf.train.Saver()
 with tf.Session(config = tfconfig) as sess:
+
+    tf_log_writer = tf.summary.FileWriter("./log", graph = sess.graph) # for tensorboard
     sess.run(init)
     step = 1
+    epoch = 1
+    
+    # initial the stopping criteria
+    validation_y = np.vstack([ trans2onehot(i, output_dim) for i in mnist.validation.labels[:5000] ])
+    stop_criteria = tools.PQAlpha( sess.run(cost, feed_dict={x: mnist.validation.images[:5000], y: validation_y}) )
+    # stop_criteria = tools.PQAlpha( sess.run(cost, feed_dict={x: mnist.validation.images[:5000], y_e: mnist.test.labels[:5000]}) )
+    
     # Keep training until reach max iterations
-    while step * batch_size < training_iters:
+    #while not (step * batch_size > training_iters) or (stop_criteria.Stop == True):
+    while (stop_criteria.Stop == False):
         batch_x, batch_y = mnist.train.next_batch(batch_size)
+        
+        # trainform to one hot
+        batch_y = np.vstack([ trans2onehot(i, output_dim) for i in batch_y ])
+        
         sess.run(optimizer, feed_dict={x: batch_x, y: batch_y})
-
+        stop_criteria.update(sess.run(cost, feed_dict={x: mnist.validation.images[:5000],
+                                                       y: validation_y}))
+        
+        if( (step * batch_size % 55000) == 0): # epoch, training=55000, validation=5000, test=10000
+            # print("validation:{}".format(sess.run(cost, feed_dict={x: mnist.validation.images[:5000],
+                                                                   # y: mnist.test.labels[:5000]})))
+            print("epoch {}".format(epoch))
+            epoch += 1
+        pass 
+        
         if step % display_step == 0:
             # Calculate batch loss and accuracy
             loss, acc = sess.run([cost, accuracy], feed_dict={x: batch_x,
@@ -148,6 +185,33 @@ with tf.Session(config = tfconfig) as sess:
                   "{:.6f}".format(loss) + ", Training Accuracy= " + \
                   "{:.5f}".format(acc))
         step += 1
+        
+        # # save models
+        # model_saver.save(sess, './models/AutoArc', global_step=step)
+        
     print("Optimization Finished!")
+    
+    # saving the model
+    print(model_saver.save(sess, './models/AutoArc'))
+    
+    
+    # Calculate accuracy for 256 mnist test images
+    test_y = np.vstack([ trans2onehot(i, output_dim) for i in mnist.test.labels[:256] ])
+    print("Test Accuracy:", \
+        sess.run(accuracy, feed_dict={x: mnist.test.images[:256],
+                                      y: test_y}))
 
+pass 
+
+# seperate the inference part into another session
+model_container = tf.train.import_meta_graph('./models/AutoArc.meta')
+with tf.Session() as sess:
+    sess.run(init)
+    model_container.restore(sess, './models/AutoArc')
+    # Calculate accuracy for 256 mnist test images
+    test_y = np.vstack([ trans2onehot(i, output_dim) for i in mnist.test.labels[:256] ])
+    print("Test Accuracy:", \
+        sess.run(accuracy, feed_dict={x: mnist.test.images[:256],
+                                      y: test_y}))
+pass
 

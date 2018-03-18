@@ -1,11 +1,9 @@
 import numpy as np
 import random
 import csv
-import tensorflow as tf
-
 ####
 # GPL is applied
-#       markliou
+#       markliou, 2017
 ###
 
 def csv_train_test_shuffer_split(FileName, Ratio, y = -1):
@@ -82,23 +80,56 @@ def trans2onehot(label, label_set):
     return OneHoty, label_hash
 pass
 
-def Matthew_correlation_coefficient(self, y, _y):
-    _y_pos = _y 
-    _y_neg = 1 - _y
+class PQAlpha(): # Decent
+    def __init__(self,
+                 Evalid,
+                 alpha=2,
+                 k=5
+                ):
+        self.Stop = False # the stop criteria
+        self.alpha = alpha
+        self.Eopt = Evalid
+        self.Evalid = Evalid
+        self.k = k
+        self.GL = 0
+        self.P = 0
+        self.PQ = 0
+        
+        self.Parr = [0 for i in range(0, self.k)]
+        
+    pass
     
-    y_pos = y 
-    y_neg = 1 - y 
-    
-    tp = tf.reduce_sum(y_pos * _y_pos)
-    tn = tf.reduce_sum(y_neg * _y_neg)
-    
-    fp = tf.reduce_sum(y_neg * _y_pos)
-    fn = tf.reduce_sum(y_pos * _y_neg)
-    
-    up   = tf.cast((tp * tn - fp * fn), dtype = tf.float32)
-    down = tf.sqrt(tf.cast(((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn)), dtype = tf.float32))
-    
-    return up/down
+    def update(self, Evalid):
+        if (self.Eopt > Evalid) :
+            self.Eopt = Evalid
+        pass
+        
+        self.Parr.append(Evalid)
+        self.Parr.pop(0)
+        
+        # GL
+        self.GL = 100 * ((Evalid - self.Eopt) / self.Eopt)
+        
+        # P 
+        P_down = self.k * min(self.Parr)
+        P_up = sum(self.Parr) - P_down
+        
+        if not P_down == 0:
+            self.P = 1000 * (P_up/P_down)
+        pass
+        
+        # PQ 
+        if not self.P == 0:
+            self.PQ = self.GL/self.P
+        pass
+        # print('PQAlpha:{} GL:{} P:{}'.format(self.PQ, self.GL, self.P))
+        
+        if self.PQ > self.alpha:
+            self.Stop = True
+        pass
+        return self
+    pass
+
 pass
 
 def main():

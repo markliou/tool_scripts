@@ -8,7 +8,11 @@ def make_PSSM400_output(pssm400filename, res_pssm_content, res_cnt, aa_list, pss
     pssm400file.write(','.join(aa_list))
     pssm400file.write('\n')
     for i in aa_list:
-        res_pssm_content[i] /= res_cnt[i]
+        if res_cnt[i] == 0:
+            res_pssm_content[i] /= 1
+        else:
+            res_pssm_content[i] /= res_cnt[i]
+        pass
         
         # scaling the element
         for j in range(0,20):
@@ -51,6 +55,9 @@ def main(argv):
         #             A   R   N   D   C   Q   E   G   H   I   L   K   M   F   P   S   T   W   Y   V
         #     1 G     0  -2   0  -1  -2  -2  -2   6  -2  -4  -4  -2  -3  -3  -2   0  -2  -2  -3  -3
         if re_op:
+            if not re_op.group(1) in aa_list:
+                continue
+            pass
             res_cnt[re_op.group(1)] += 1
             c_res_pssm_content = np.array([np.float64(re_op.group(i)) for i in range(2,22)])
             res_pssm_content[re_op.group(1)] += c_res_pssm_content
