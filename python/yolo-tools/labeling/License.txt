@@ -1,0 +1,3 @@
+According to the original license.
+
+https://github.com/Cartucho/OpenLabeling/blob/master/LICENSE

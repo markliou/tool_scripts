@@ -1,0 +1,2 @@
+* fill the blank picture recoder
+for i in `ls images/*.jpg`; do bf=$(echo ${i} | awk -F/ '{print $2}' | sed 's/.jpg//') ; touch bbox_txt/${bf}.txt ; done
