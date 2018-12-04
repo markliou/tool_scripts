@@ -1,2 +1,5 @@
 * fill the blank picture recoder
 for i in `ls images/*.jpg`; do bf=$(echo ${i} | awk -F/ '{print $2}' | sed 's/.jpg//') ; touch bbox_txt/${bf}.txt ; done
+
+* get the whole image path (suppose we put the picture in "merge" flder)
+for i in `ls merge/*.jpg`; do echo `pwd`/${i} >> training.rec  ; done
