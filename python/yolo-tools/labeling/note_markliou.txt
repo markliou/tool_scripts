@@ -3,3 +3,6 @@ for i in `ls images/*.jpg`; do bf=$(echo ${i} | awk -F/ '{print $2}' | sed 's/.j
 
 * get the whole image path (suppose we put the picture in "merge" flder)
 for i in `ls merge/*.jpg`; do echo `pwd`/${i} >> training.rec  ; done
+
+* the ffmpeg note
+ffmpeg -i <input_video> -vf -fps=5 <output_pic_base_name>%04d.jpg
