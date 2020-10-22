@@ -29,8 +29,15 @@ def flatten_weights(model):
     return flated_weights
 pass 
 
-def recover_weights_shape(model, flated_weights):
-    
+def recover_flatten_weights(model, flated_weights):
+    access_index = 0
+    for model_tesnsor in model.weights:
+        element_shape = model_tesnsor.shape.as_list()
+        element_number = np.ones(element_shape).sum().astype('int')
+        model_tesnsor.assign(flated_weights[access_index:access_index+element_number].reshape(element_shape))
+        access_index += element_number
+    pass
+    return model
 pass 
 
 def main():
@@ -63,10 +70,24 @@ def main():
     flated_weights = flatten_weights(cnn_model)
     print(flated_weights.shape)
 
-    ## feed the flatten array to model
-    target_flated_weights = np.ones_like(flated_weights)
-    recover_weights_shape(cnn_model, target_flated_weights)
+    ## feed the flated weights to model
+    recover_flatten_weights(cnn_model, flated_weights)
     print(cnn_model.weights)
+
+    ## feed the flatten array to model
+    print('=====')
+    cnn_model_ts = cnn()
+    flated_weights = flatten_weights(cnn_model_ts)
+    print(cnn_model_ts(np.ones([32,28,28,1])))
+    target_flated_weights = np.ones_like(flated_weights)
+    recover_flatten_weights(cnn_model_ts, target_flated_weights)
+    print(cnn_model_ts(np.ones([32,28,28,1])))
+    # print(cnn_model.weights)
+    recover_flatten_weights(cnn_model_ts, flated_weights)
+    # print(cnn_model.weights)
+    print(cnn_model_ts(np.ones([32,28,28,1])))
+    print('=====')
+
 
 pass 
 
