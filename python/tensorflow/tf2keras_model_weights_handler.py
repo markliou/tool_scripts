@@ -24,12 +24,25 @@ def cnn():
     return tf.keras.Model(inputs=Input, outputs=out)
 pass 
 
-def flatten_weights(model):
+def regre():
+    Input = tf.keras.Input([28])
+    fc1 = tf.keras.layers.Dense(3)(Input)
+    fc2 = tf.keras.layers.Dense(4)(fc1)
+    out = tf.keras.layers.Dense(1)(fc2)
+    return tf.keras.Model(inputs=Input, outputs=out)
+pass 
+
+def flatten_weights_np(model):
     flated_weights = np.concatenate([target_weights.numpy().flatten() for target_weights in model.weights])
     return flated_weights
 pass 
 
-def recover_flatten_weights(model, flated_weights):
+def flatten_weights_tfkeras(model):
+    flated_weights = tf.Variable(tf.concat([tf.reshape(weights, [-1]) for weights in model.trainable_weights], axis=-1))
+    return flated_weights
+pass 
+
+def recover_flatten_weights_np(model, flated_weights):
     access_index = 0
     for model_tesnsor in model.weights:
         element_shape = model_tesnsor.shape.as_list()
@@ -40,7 +53,25 @@ def recover_flatten_weights(model, flated_weights):
     return model
 pass 
 
+def recover_flatten_weights_tfkeras(model, flated_weights):
+    access_index = 0
+    for model_tesnsor in model.trainable_weights:
+        element_shape = model_tesnsor.shape.as_list()
+        element_number = np.ones(element_shape).sum().astype('int')
+        model_tesnsor.assign(tf.reshape(flated_weights[access_index:access_index+element_number], element_shape))
+        access_index += element_number
+    pass
+    return model
+pass 
+
 def main():
+
+    ######################### numpy section ##############################
+    # this section give the tf2 to numpy usage.
+    # but if the architecture using numpy would be slow due to the comunication between 
+    # the host and GPU
+    ######################################################################
+
     cnn_model = cnn()
     # print(cnn_model.summary())
     
@@ -67,26 +98,46 @@ def main():
     print(cnn_model.weights)
 
     ## flating the weights
-    flated_weights = flatten_weights(cnn_model)
+    flated_weights = flatten_weights_np(cnn_model)
     print(flated_weights.shape)
 
     ## feed the flated weights to model
-    recover_flatten_weights(cnn_model, flated_weights)
+    recover_flatten_weights_np(cnn_model, flated_weights)
     print(cnn_model.weights)
 
     ## feed the flatten array to model
     print('=====')
     cnn_model_ts = cnn()
-    flated_weights = flatten_weights(cnn_model_ts)
+    flated_weights = flatten_weights_np(cnn_model_ts)
     print(cnn_model_ts(np.ones([32,28,28,1])))
     target_flated_weights = np.ones_like(flated_weights)
-    recover_flatten_weights(cnn_model_ts, target_flated_weights)
+    recover_flatten_weights_np(cnn_model_ts, target_flated_weights)
     print(cnn_model_ts(np.ones([32,28,28,1])))
     # print(cnn_model.weights)
-    recover_flatten_weights(cnn_model_ts, flated_weights)
+    recover_flatten_weights_np(cnn_model_ts, flated_weights)
     # print(cnn_model.weights)
     print(cnn_model_ts(np.ones([32,28,28,1])))
     print('=====')
+
+    ######################### tensorflow section ##############################
+    # this section give the tensors of tf2 usage example.
+    # Using this section would have better performace than use the numpy version
+    # due to saving the communication time delay between host and GPU
+    ######################################################################
+    reg = regre()
+
+    print(flatten_weights_tfkeras(reg))
+    ori_ans = reg(np.ones([1,28]))
+
+    tf_weights_container = flatten_weights_tfkeras(reg)
+    print(tf_weights_container)
+
+    recover_flatten_weights_tfkeras(reg, tf_weights_container)
+    print(reg.weights)
+    cha_ans = reg(np.ones([1,28]))
+
+    print([ori_ans.numpy(), cha_ans.numpy()])
+
 
 
 pass 
