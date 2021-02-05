@@ -6,6 +6,8 @@
 #include <math.h> 
 #include <iostream> 
 
+#include "trivial_functions.h"
+
 using namespace std ;
 
 float* doubleArray(float* a, int array_size){
@@ -25,28 +27,28 @@ void info(float* a, int array_size){
 }
 
 
-int main(){
-    int array_size = 32 ;
-    float* a = new float[array_size]{0} ;
-    float* b = new float[array_size]{0} ;
+// int main(){
+//     int array_size = 32 ;
+//     float* a = new float[array_size]{0} ;
+//     float* b = new float[array_size]{0} ;
 
-    for (int step = 0; step < array_size; step++){
-        a[step] = step ; 
-        b[step] = a[step] * 2 ;
-    }
+//     for (int step = 0; step < array_size; step++){
+//         a[step] = step ; 
+//         b[step] = a[step] * 2 ;
+//     }
 
-    for (int step = 0; step < array_size; step++){
-        cout << " " << b[step] ;
-    }
-    cout << endl ;
+//     for (int step = 0; step < array_size; step++){
+//         cout << " " << b[step] ;
+//     }
+//     cout << endl ;
     
-    float* c = doubleArray(b, array_size) ;
-    info(c, array_size);
-    cout << endl ;
+//     float* c = doubleArray(b, array_size) ;
+//     info(c, array_size);
+//     cout << endl ;
 
-    delete a ;
-    delete b ;
-    delete c ;
+//     delete a ;
+//     delete b ;
+//     delete c ;
 
-    return 0;
-}
+//     return 0;
+// }
