@@ -63,6 +63,7 @@ static PyObject* pyDoubleArray(PyObject* self, PyObject* args, PyObject* kwargs)
     // cout << "B." << res[4] << endl;
     
     // 製作 output 的 list
+    // ref: https://bytes.com/topic/python/answers/167117-c-extension-return-array-longs-pointer
     PyObject *tup = PyList_New(array_size);
     for(int step = 0; step < array_size; step++){
         PyList_SET_ITEM(tup, step, Py_BuildValue("f", res[step]));
