@@ -1,0 +1,4 @@
+The location of the Python.h is : /usr/include/python3.8
+The flag suggestion:  -I/usr/include/python3.8
+
+To build: python3 setup.py build_ext --inplace
