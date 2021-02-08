@@ -47,9 +47,11 @@ static PyObject* pyDoubleArray(PyObject* self, PyObject* args, PyObject* kwargs)
     if (!PyArg_ParseTuple(args, "Oi", &Pylst, &array_size)) {
         return NULL;
     }
-    cout << "A." << array_size << " " << PyObject_Length(Pylst) << endl;
+    // cout << "A." << array_size << " " << PyObject_Length(Pylst) << endl;
 
     // 把 pyobject 的 Array 轉成 c array
+    // 更多型別轉換:
+    // ref : https://www.mdeditor.tw/pl/pj72/zh-tw
     a = new float[PyObject_Length(Pylst)] ;
     float _temp ;
     for(int step = 0; step < array_size; step++){
