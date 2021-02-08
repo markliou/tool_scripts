@@ -75,7 +75,6 @@ static PyObject* pyDoubleArray(PyObject* self, PyObject* args, PyObject* kwargs)
     }
     // cout << "C." << tup << endl;
     
-
     // 最後結果要回傳給 py
     return tup;
     // return Py_BuildValue("i", array_size) ;
@@ -85,7 +84,7 @@ static PyObject* pyDoubleArray(PyObject* self, PyObject* args, PyObject* kwargs)
 /***** Section 2. 把方法包裝起來 *****/
 // 需要對每個function都有說明
 char pyDoubleArray_doc[] = "This function will give the double vaile of the given array" ;
-static PyMethodDef arrayInC_funcs[] = {
+static PyMethodDef arrayInC_funcs[] = { // method 名稱定義就隨意。這邊需要命名是為了要放到 section 3 的 initial 方法。原因是有可能會有不同的 module 要使用不同的 initial 方法。就可以在這邊處理
     {"pyDoubleArrayInPy", // 預計要在py裡面的名稱
      (PyCFunction) pyDoubleArray, // 目前在binder裡面的對應的
       METH_VARARGS, // 在py裡面會呈現的狀態。例如如果是沒有任何輸入就單純操作就可以用 METH_NOARGS
