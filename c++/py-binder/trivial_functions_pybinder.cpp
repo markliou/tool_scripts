@@ -28,7 +28,7 @@ static PyObject* pyDoubleArray(PyObject* self, PyObject* args, PyObject* kwargs)
     // 需要宣告 a 跟 array_size 兩個input變數
     // 還需要宣告 res 的 output變數
     float* a ;
-    int array_size = 0 ;
+    int array_size ;
     float* res ;
     PyObject* Pylst ;
 
@@ -50,12 +50,15 @@ static PyObject* pyDoubleArray(PyObject* self, PyObject* args, PyObject* kwargs)
     cout << "A." << array_size << " " << PyObject_Length(Pylst) << endl;
 
     // 把 pyobject 的 Array 轉成 c array
-    a = new float[PyObject_Length(Pylst)]{0.} ;
+    a = new float[PyObject_Length(Pylst)] ;
+    float _temp ;
     for(int step = 0; step < array_size; step++){
-        PyObject* v = PyList_GetItem(Pylst, step);
-        a[step] = (float)PyLong_AsLong(v) ;
+        a[step] = (float)PyFloat_AsDouble(PyList_GetItem(Pylst, step)) ;
     }
     // cout << a[3] << endl ;
+    // 釋放 pyobject ，避免 memory leakage
+    Py_XDECREF(Pylst);
+
 
     // 透過上面的賦值後，已經可把在 python 裡面的數值放到 a 跟 array_size 裡面。
     // 這時候只需要呼叫 c 的 fucntion 就可以了
@@ -69,6 +72,7 @@ static PyObject* pyDoubleArray(PyObject* self, PyObject* args, PyObject* kwargs)
         PyList_SET_ITEM(tup, step, Py_BuildValue("f", res[step]));
     }
     // cout << "C." << tup << endl;
+    
 
     // 最後結果要回傳給 py
     return tup;
@@ -105,8 +109,8 @@ static PyModuleDef trivial_functions_in_c = {
 
 
 /***** Setion 4. module 初始化的方法 *****/
-PyMODINIT_FUNC PyInit_trivial_functions_in_c(void) { // 把module的名稱前面加上 PyInit_
-	return PyModule_Create(&trivial_functions_in_c); // 上面宣告的模組資訊放到這邊進行初始化
+PyMODINIT_FUNC PyInit_trivial_functions_in_c() { // 把module的名稱前面加上 PyInit_
+    return PyModule_Create(&trivial_functions_in_c); // 上面宣告的模組資訊放到這邊進行初始化
 } ;
 
 
