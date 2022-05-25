@@ -47,4 +47,5 @@ Temporary Items
 .apdisk
 
 # Unity meta file
-./cS/unity/*.meta
+cs/unity/*.meta
+cs/unity/*.meta.
