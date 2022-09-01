@@ -1,0 +1,1 @@
+https://docs.microsoft.com/zh-tw/azure/azure-maps/zoom-levels-and-tile-grid?tabs=csharp
