@@ -8,3 +8,6 @@ remote build server
 兩者最大的不同點在於透過docker compose需要手動決定在哪個節點跑；使用docker swarm就是由loading balancer來決定放到哪一台機器上跑，使用者也可以透過node的tag來將job放到目標機器上。 
 
 # docker compose 
+
+## References
+* https://www.docker.com/blog/how-to-deploy-on-remote-docker-hosts-with-docker-compose/
