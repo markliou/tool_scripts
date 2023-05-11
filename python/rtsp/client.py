@@ -30,7 +30,10 @@ def rstp_runner(url):
 
 def main():
     # use the wowza server example rtsp streaming
-    rstp_runner('rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4')
+    # rstp_runner('rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mp4')
+
+    # use the local server example rtsp streaming
+    rstp_runner('rtsp://localhost:8554/')
 
 
 if __name__ == '__main__':
