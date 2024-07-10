@@ -1,6 +1,9 @@
 # this script will send the request to MQTT, and wait for the response
 
 import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
+import paho.mqtt.subscribe as subscribe
+
 import json
 
 
@@ -8,26 +11,6 @@ brokerAddr = "broker.hivemq.com"
 serviceTopic = "markliou/test-service"
 responseTopic = "markliou/test-response"
 
-
-# The callback for when the client receives a CONNACK response from the server.
-def on_connect(client, userdata, flags, reason_code, properties):
-    print(f"Connected with result code {reason_code}")
-    client.subscribe(responseTopic)
-
-
-# The callback for when a PUBLISH message is received from the server.
-def on_message(client, userdata, msg):
-    message = f"{msg.topic} {str(msg.payload)}"
-    print(message)
-
-
-clientc = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
-clientc.on_connect = on_connect
-clientc.on_message = on_message
-
-clientc.connect(brokerAddr, 1883, 60)
-
-clientc.loop_start()
 
 ## 以下一次性傳送訊息 ##
 content = {
@@ -48,11 +31,10 @@ content = {
         },
     }
 }
+print(f"test msg: {json.dumps(content)}")
+publish.single(serviceTopic, json.dumps(content), hostname=brokerAddr)
+msg = subscribe.simple(responseTopic, hostname=brokerAddr)
+print("%s %s" % (msg.topic, msg.payload))
 
-pubFlag = clientc.publish(serviceTopic, json.dumps(content))
-pubFlag.wait_for_publish()
 
-# because this request just need to call one-time, that the stop can be set in "on_message" section
-clientc.loop_stop()
-clientc.disconnect()
 
